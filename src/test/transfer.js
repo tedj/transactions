@@ -38,4 +38,18 @@ describe('balance model', () => {
     const balance3 = await models.Balance.getByAccount(3);
     expect(balance3.balance).to.equal(1200);
   });
+  it('should throw an error if the sender or the receiver does not exist', async () => {
+    try {
+      await models.Balance.transfer(5, 2, 100);
+    } catch (err) {
+      expect(err).to.eql(new Error('account does not exist'));
+    }
+  });
+  it('should throw an error if the amount is bigger than the current balance', async () => {
+    try {
+      await models.Balance.transfer(1, 2, 2000);
+    } catch (err) {
+      expect(err).to.eql(new Error('amount is bigger than the current balance'));
+    }
+  });
 });
