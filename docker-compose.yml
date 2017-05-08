@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+   db:
+     image: mysql
+     restart: always
+     environment:
+       MYSQL_ROOT_PASSWORD: TEST_PWD
+       MYSQL_DATABASE: TEST_DB
+       MYSQL_USER: TEST_USER
+       MYSQL_PASSWORD: TEST_PWD
+   transfer_api:
+     depends_on:
+       - db
+     build: .
+     ports:
+        - "8080:8080"
