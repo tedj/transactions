@@ -24,6 +24,8 @@ const HOST = process.env.HOST || '0.0.0.0';
 
 models.sequelize.sync().then(() => app.listen(PORT, HOST, () => {
   console.log('Listening...');
-}));
+})).catch((err) => {
+  console.log(err);
+});
 
 export default app; // for testing

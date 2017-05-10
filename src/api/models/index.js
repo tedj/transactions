@@ -2,8 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import Sequelize from 'sequelize';
 
-const sequelize = new Sequelize('namshi', 'root', 'yaxi17', {
-  host: 'db',
+const sequelize = new Sequelize('TEST_DB', 'TEST_USER', 'TEST_PWD', {
+  host: 'mysql_db',
   dialect: 'mysql',
 });
 
