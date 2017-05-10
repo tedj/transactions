@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-   db:
+   mysql_db:
      image: mysql
      restart: always
      environment:
@@ -9,9 +9,9 @@ services:
        MYSQL_DATABASE: TEST_DB
        MYSQL_USER: TEST_USER
        MYSQL_PASSWORD: TEST_PWD
-   transfer_api:
+   balances:
      depends_on:
-       - db
+       - mysql_db
      build: .
      ports:
         - "8080:8080"
