@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "babel src --out-dir dist --source-maps --presets=es2015,stage-0",
     "start": "cd src/; ../node_modules/.bin/babel-node --presets=es2015,stage-0 app.js",
-    "test": "export NODE_ENV='test'; cd src/; ../node_modules/.bin/mocha --compilers js:babel-core/register test/ -w --recursive --require babel-polyfill"
+    "test": "bash src/test/test.sh"
   },
   "babel": {
     "presets": [
