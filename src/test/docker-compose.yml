@@ -12,6 +12,10 @@ services:
       - mysql_db
     build: ../..
     restart: always
+    environment:
+        MYSQL_DB: TEST_DB
+        MYSQL_PWD: TEST_PWD
+        MYSQL_USER: TEST_USER
     ports:
       - "8080:8080"
   tester:

@@ -1,10 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import Sequelize from 'sequelize';
+import config from '../../config/config';
 
-const sequelize = new Sequelize('TEST_DB', 'TEST_USER', 'TEST_PWD', {
-  host: 'mysql_db',
-  dialect: 'mysql',
+const sequelize = new Sequelize(config.get('DB'), config.get('USER'), config.get('PWD'), {
+  host: config.get('HOST'),
+  dialect: config.get('DIALECT'),
 });
 
 const db = {};

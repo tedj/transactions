@@ -6,12 +6,17 @@ services:
      restart: always
      environment:
        MYSQL_ROOT_PASSWORD: TEST_PWD
-       MYSQL_DATABASE: TEST_DB
+       MYSQL_DATABASE: DEV_DB
        MYSQL_USER: TEST_USER
        MYSQL_PASSWORD: TEST_PWD
    balances:
      depends_on:
        - mysql_db
      build: .
+     restart: always
+     environment:
+        MYSQL_DB: DEV_DB
+        MYSQL_PWD: TEST_PWD
+        MYSQL_USER: TEST_USER
      ports:
         - "8080:8080"
