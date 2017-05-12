@@ -15,7 +15,10 @@ async function transferController(req, res, next) {
     await models.Balance.transfer(from, to, amount);
     return res.json({});
   } catch (err) {
-    return next(err);
+    if (!err.code) {
+      return next(err);
+    }
+    return res.status(err.code).json(err);
   }
 }
 
