@@ -100,5 +100,33 @@ describe('Integration::transfer API', () => {
       const balance3 = await getBalanceByAccount(3);
       expect(balance3).to.equal(1200);
     });
+    it('it should not accept transfer from or to accounts that does not exist', (done) => {
+      const params = {
+        from: 5,
+        to: 2,
+        amount: 100,
+      };
+      chai.request(BASE_URL)
+        .post(TRANSFER_API_ENDPOINT)
+        .send(params)
+        .end((err, res) => {
+          res.should.have.status(404);
+          done();
+        });
+    });
+    it('should not transfer money if the amount is bigger than the current balance', (done) => {
+      const params = {
+        from: 1,
+        to: 2,
+        amount: 5000,
+      };
+      chai.request(BASE_URL)
+        .post(TRANSFER_API_ENDPOINT)
+        .send(params)
+        .end((err, res) => {
+          res.should.have.status(422);
+          done();
+        });
+    });
   });
 });
