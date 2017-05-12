@@ -1,5 +1,16 @@
 import uuid from 'uuid';
 
+function AccountNotFoundException(message) {
+  this.message = message;
+  this.name = 'AccountNotFound';
+  this.code = 404;
+}
+
+function BalanceNotSufficientException(message) {
+  this.message = message;
+  this.name = 'BalanceNotSufficient';
+  this.code = 422;
+}
 module.exports = (sequelize, DataTypes) => {
   const Balance = sequelize.define('Balance', {
     account: {
@@ -20,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
         const balance = await Balance.findOne({
           where: { account },
         });
-        if (!balance) throw Error('account does not exist');
+        if (!balance) throw new AccountNotFoundException('account does not exist');
         return balance;
       },
       transfer: async (from, to, amount) => {
@@ -30,7 +41,9 @@ module.exports = (sequelize, DataTypes) => {
           Balance.getByAccount(to),
         ]);
         // check if the balance of the sender account is bigger than the amount to transfer
-        if (balanceFrom.balance < amount) { throw Error('amount is bigger than the current balance'); }
+        if (balanceFrom.balance < amount) {
+          throw new BalanceNotSufficientException('amount is bigger than the current balance');
+        }
 
         const decreaseBalance = async (t) => {
           const ref = uuid.v4();
