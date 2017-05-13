@@ -35,6 +35,7 @@ module.exports = (sequelize, DataTypes) => {
         return balance;
       },
       transfer: async (from, to, amount) => {
+        const Transaction = sequelize.import('./transaction');
         // check if the sender and receiver accounts exist
         const [balanceFrom, balanceTo] = await Promise.all([
           Balance.getByAccount(from),
@@ -46,20 +47,28 @@ module.exports = (sequelize, DataTypes) => {
         }
 
         const decreaseBalance = async (t) => {
-          const ref = uuid.v4();
+          const reference = uuid.v4();
+          const account = from;
           return Promise.all([
-            sequelize.query(`INSERT INTO Transactions (reference, account, amount)
-             VALUES ('${ref}', ${from}, ${amount})`, { transaction: t }),
+            Transaction.create({
+              reference,
+              account,
+              amount,
+            }, { transaction: t }),
             sequelize.query(`
              UPDATE Balances SET balance = balance - ${amount}
              WHERE account = ${from}`, { transaction: t }),
           ]);
         };
         const increaseBalance = async (t) => {
-          const ref = uuid.v4();
+          const reference = uuid.v4();
+          const account = to;
           return Promise.all([
-            sequelize.query(`INSERT INTO Transactions (reference, account, amount)
-             VALUES ('${ref}', ${to}, ${amount})`, { transaction: t }),
+            Transaction.create({
+              reference,
+              account,
+              amount,
+            }, { transaction: t }),
             sequelize.query(`
                UPDATE Balances SET balance = balance + ${amount}
                WHERE account = ${to}`, { transaction: t }),
