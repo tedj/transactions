@@ -128,5 +128,18 @@ describe('Integration::transfer API', () => {
           done();
         });
     });
+    it('A has a balance of 1000 and tries to transfer 1000 to user B and C simultaneously', async () => {
+      try {
+        await Promise.all([
+          transferBalance(1, 2, 1000),
+          transferBalance(1, 3, 1000),
+        ]);
+        const balance1 = await getBalanceByAccount(1);
+        expect(balance1).to.equal(0);
+      } catch (err) {
+        const balance1 = await getBalanceByAccount(1);
+        expect(balance1).to.equal(0);
+      }
+    });
   });
 });
