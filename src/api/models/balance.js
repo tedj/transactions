@@ -1,3 +1,4 @@
+import Sequelize from 'sequelize';
 import uuid from 'uuid';
 
 function AccountNotFoundException(message) {
@@ -27,6 +28,15 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     classMethods: {
+      getByAccountWithTransaction: async (account, t) => {
+        const balance = await Balance.findOne({
+          where: { account },
+          transaction: t,
+          lock: t.LOCK.UPDATE,
+        });
+        if (!balance) throw new AccountNotFoundException('account does not exist');
+        return balance;
+      },
       getByAccount: async (account) => {
         const balance = await Balance.findOne({
           where: { account },
@@ -36,16 +46,17 @@ module.exports = (sequelize, DataTypes) => {
       },
       transfer: async (from, to, amount) => {
         const Transaction = sequelize.import('./transaction');
-        // check if the sender and receiver accounts exist
-        const [balanceFrom, balanceTo] = await Promise.all([
-          Balance.getByAccount(from),
-          Balance.getByAccount(to),
-        ]);
-        // check if the balance of the sender account is bigger than the amount to transfer
-        if (balanceFrom.balance < amount) {
-          throw new BalanceNotSufficientException('amount is bigger than the current balance');
-        }
-
+        const checkAvailability = async (t) => {
+          // check if the sender and receiver accounts exist
+          const [balanceFrom, balanceTo] = await Promise.all([
+            Balance.getByAccountWithTransaction(from, t),
+            Balance.getByAccountWithTransaction(to, t),
+          ]);
+          // check if the balance of the sender account is bigger than the amount to transfer
+          if (balanceFrom.balance < amount) {
+            throw new BalanceNotSufficientException('amount is bigger than the current balance');
+          }
+        };
         const decreaseBalance = async (t) => {
           const reference = uuid.v4();
           const account = from;
@@ -57,7 +68,7 @@ module.exports = (sequelize, DataTypes) => {
             }, { transaction: t }),
             sequelize.query(`
              UPDATE Balances SET balance = balance - ${amount}
-             WHERE account = ${from}`, { transaction: t }),
+             WHERE account = ${account}`, { transaction: t }),
           ]);
         };
         const increaseBalance = async (t) => {
@@ -70,19 +81,16 @@ module.exports = (sequelize, DataTypes) => {
               amount,
             }, { transaction: t }),
             sequelize.query(`
-               UPDATE Balances SET balance = balance + ${amount}
-               WHERE account = ${to}`, { transaction: t }),
+             UPDATE Balances SET balance = balance + ${amount}
+             WHERE account = ${account}`, { transaction: t }),
           ]);
         };
-        return sequelize.transaction(t =>
-          decreaseBalance(t, from, amount)
-              .then(() => increaseBalance(t, to, amount)))
-          .then(() => {
-            console.log('all committed');
-          }).catch((err) => {
-            console.log('rolled back');
-            console.log(err);
-          });
+        return sequelize.transaction({
+          isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+        }, t =>
+          checkAvailability(t)
+            .then(() => decreaseBalance(t, from, amount)
+              .then(() => increaseBalance(t, to, amount))));
       },
     },
     timestamps: false,
