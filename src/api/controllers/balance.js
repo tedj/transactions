@@ -1,16 +1,25 @@
 import models from '../models';
 
-function createBalanaceController(req, res, next) {
+async function createBalanaceController(req, res, next) {
   const { account, balance } = req.body;
-  models.Balance.create({
-    account,
-    balance,
-  }).then(resp => res.json(resp))
-    .catch(err => next(err));
+  try {
+    const resp = await models.Balance.create({
+      account,
+      balance,
+    });
+    return res.json(resp);
+  } catch (err) {
+    return next(err);
+  }
 }
 
-function getAllBalancesController(req, res, next) {
-  models.Balance.findAll().then(balances => res.json(balances));
+async function getAllBalancesController(req, res, next) {
+  try {
+    const balances = await models.Balance.findAll();
+    return res.json(balances);
+  } catch (err) {
+    return next(err);
+  }
 }
 
 async function getBalanceByAccountController(req, res, next) {
